@@ -60,3 +60,13 @@ end
 
 -- Create keymap for F5 to compile and run
 vim.keymap.set("n", "<F5>", ":lua CompileAndRunCpp()<CR>", { noremap = true, silent = true })
+
+-- Always be in insert when entering a terminal window
+vim.api.nvim_create_autocmd({ "TermOpen", "BufEnter", "WinEnter" }, {
+  pattern = "term://*",
+  callback = function()
+    if vim.bo.buftype == "terminal" then
+      vim.cmd("startinsert")
+    end
+  end,
+})

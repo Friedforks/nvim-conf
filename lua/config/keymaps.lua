@@ -10,4 +10,6 @@ k.set("n", "<leader>rd", ":CompetiTest delete_testcase<CR>")
 k.set("n", "<leader>rt", ":CompetiTest receive testcases<CR>")
 k.set("n", "<leader>rp", ":CompetiTest receive problem<CR>")
 k.set("n", "<leader>rc", ":CompetiTest receive contest<CR>")
+
 --k.set("n", "<leader>rv", ":CompetiTest edit_testcase<Enter><CR>")
+k.set("n", "<leader>rf", ":RunFile<CR>", { noremap = true, silent = false })

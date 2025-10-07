@@ -65,4 +65,60 @@ ls.add_snippets("tex", {
     i(1),
     t("}"),
   }),
+
+  -- align*
+  s(
+    "align*",
+    fmt(
+      [[
+  \begin{{align*}}
+    {}
+  \end{{align*}}
+  ]],
+      { i(1, "") }
+    )
+  ),
+
+  -- formula \[...\]
+  -- s("fla", {
+  --   t("\\["),
+  --   i(1),
+  --   t("\\]"),
+  -- }),
+  s(
+    "fla",
+    fmt(
+      [[
+    \[
+        {}
+    \]
+    ]],
+      { i(1, "") }
+    )
+  ),
+
+  s("prime", { t("^{\\prime}") }),
+  s("eps", { t("\\epsilon") }),
+  s(
+    "pf",
+    fmt(
+      [[
+    \begin{{myproof}}
+        {}
+    \end{{myproof}}
+    ]],
+      { i(1, "") }
+    )
+  ),
+  s(
+    "pmx",
+    fmt(
+      [[
+            \begin{{pmatrix}}
+            {} \\
+            \end{{pmatrix}}
+            ]],
+      { i(1, "") }
+    )
+  ),
 })

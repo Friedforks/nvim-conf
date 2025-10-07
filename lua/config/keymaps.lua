@@ -12,4 +12,6 @@ k.set("n", "<leader>rp", ":CompetiTest receive problem<CR>")
 k.set("n", "<leader>rc", ":CompetiTest receive contest<CR>")
 
 --k.set("n", "<leader>rv", ":CompetiTest edit_testcase<Enter><CR>")
-k.set("n", "<leader>rf", ":RunFile<CR>", { noremap = true, silent = false })
+k.set("n", "<leader>qr", ":QuickCodeRunner<CR>", { noremap = true })
+k.set("n", "<leader>qp", ":QuickCodePad<CR>", { noremap = true })
+k.set("n", "<leader>qp", ":QuickCodePad<CR>", { noremap = true })

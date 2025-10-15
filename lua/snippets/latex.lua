@@ -121,4 +121,13 @@ ls.add_snippets("tex", {
       { i(1, "") }
     )
   ),
+  s(
+    "vec",
+    fmt(
+      [[
+            \begin{{pmatrix}}{} \\ \end{{pmatrix}}
+            ]],
+      { i(1, "") }
+    )
+  ),
 })

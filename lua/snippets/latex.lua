@@ -130,4 +130,37 @@ ls.add_snippets("tex", {
       { i(1, "") }
     )
   ),
+  s(
+    "ink",
+    fmt(
+      [[
+\begin{{center}}
+  \def\svgwidth{{0.8\linewidth}}
+  \import{{figures/}}{{{}.pdf_tex}}
+\end{{center}}
+]],
+      {
+        i(1, "Base name"), -- basename (no extension)
+      }
+    )
+  ),
+  s(
+    "inkf",
+    fmt(
+      [[
+\begin{{figure}}[htbp]
+  \centering
+  \def\svgwidth{{0.8\linewidth}}
+  \import{{figures/}}{{{}.pdf_tex}}
+  \caption{{{}}}
+  \label{{fig:{}}}
+\end{{figure}}
+]],
+      {
+        i(1, "basename"), -- filename base
+        i(2, "Caption text"), -- caption
+        rep(1), -- auto-use basename for label
+      }
+    )
+  ),
 })

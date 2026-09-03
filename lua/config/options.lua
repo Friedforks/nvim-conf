@@ -8,9 +8,20 @@ opt.softtabstop = 4
 opt.expandtab = true
 opt.tabstop = 4
 
+-- Neovide (GUI) font — pin it explicitly so it doesn't drift with fontconfig changes.
+vim.g.neovide_font = "JetBrainsMono Nerd Font:h12"
+
+-- Fallback for other GUI frontends / plain `gui` handling.
+vim.opt.guifont = "JetBrainsMono Nerd Font:h12"
+
 function CompileAndRunCpp()
-  local filename = vim.fn.expand("%")
-  local basename = vim.fn.expand("%:r")
+  local filename = vim.fn.expand("%:p")
+  local basename = vim.fn.expand("%:p:r")
+
+  -- Shell-quote both so filenames with spaces or [brackets] aren't split/globbed.
+  -- Abs paths (%:p) also let the run step resolve without a PATH lookup.
+  local sfname = vim.fn.shellescape(filename)
+  local sbase = vim.fn.shellescape(basename)
 
   -- Save the current buffer
   vim.cmd("write")
@@ -37,14 +48,14 @@ function CompileAndRunCpp()
     if job_id and vim.fn.jobwait({ job_id }, 0)[1] == -1 then
       -- Terminal is active, send commands
       vim.fn.jobsend(job_id, "clear\n")
-      local compile_cmd = string.format("g++ -std=c++17 %s -o %s && %s\n", filename, basename, basename)
+      local compile_cmd = string.format("g++ -std=c++17 %s -o %s && %s\n", sfname, sbase, sbase)
       vim.fn.jobsend(job_id, compile_cmd)
     else
       -- Terminal exists but job ended, create new one
       vim.cmd("quit")
       vim.cmd("below split")
       vim.cmd("resize 8")
-      local compile_cmd = string.format("g++ -std=c++17 %s -o %s && %s", filename, basename, basename)
+      local compile_cmd = string.format("g++ -std=c++17 %s -o %s && %s", sfname, sbase, sbase)
       vim.cmd("terminal " .. compile_cmd)
       vim.cmd("startinsert")
     end
@@ -52,7 +63,7 @@ function CompileAndRunCpp()
     -- Create new terminal
     vim.cmd("below split")
     vim.cmd("resize 8")
-    local compile_cmd = string.format("g++ -std=c++17 %s -o %s && %s", filename, basename, basename)
+    local compile_cmd = string.format("g++ -std=c++17 %s -o %s && %s", sfname, sbase, sbase)
     vim.cmd("terminal " .. compile_cmd)
     vim.cmd("startinsert")
   end

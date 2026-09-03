@@ -163,4 +163,20 @@ ls.add_snippets("tex", {
       }
     )
   ),
+  s(
+    "code",
+    fmt(
+      [[
+            \begin{{tcolorbox}}[colframe=purple!70!black]
+            \begin{{minted}}{{{}}}
+            {}
+            \end{{minted}}
+            \end{{tcolorbox}}
+            ]],
+      {
+        i(1, "language"),
+        i(2, "code"),
+      }
+    )
+  ),
 })

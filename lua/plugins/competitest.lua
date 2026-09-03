@@ -255,7 +255,10 @@ return {
             exec = "sh",
             args = {
               "-c",
-              "mkdir -p '$(WORKSPACE)/binaries' && clang++ -Wall -std=c++17 -g '$(FABSPATH)' -o '$(WORKSPACE)/binaries/$(FNOEXT)'",
+              -- -I dir provides bits/stdc++.h on macOS (patched GCC header in
+              -- ~/.local/share/bits); harmless on Linux — dir missing, ignored,
+              -- Linux clang uses GCC's real header via libstdc++.
+              "mkdir -p '$(WORKSPACE)/binaries' && clang++ -Wall -std=c++17 -g -I'$(HOME)/.local/share' '$(FABSPATH)' -o '$(WORKSPACE)/binaries/$(FNOEXT)'",
             },
           },
           rust = { exec = "rustc", args = { "$(FNAME)" } },

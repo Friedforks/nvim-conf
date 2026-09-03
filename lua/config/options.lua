@@ -5,8 +5,9 @@ opt = vim.opt
 opt.clipboard = "unnamedplus"
 opt.shiftwidth = 4
 opt.softtabstop = 4
-opt.expandtab = true
 opt.tabstop = 4
+-- Real tabs globally (noexpandtab); width stays 4 columns.
+opt.expandtab = false
 
 -- Neovide (GUI) font — pin it explicitly so it doesn't drift with fontconfig changes.
 vim.g.neovide_font = "JetBrainsMono Nerd Font:h12"
@@ -48,14 +49,18 @@ function CompileAndRunCpp()
     if job_id and vim.fn.jobwait({ job_id }, 0)[1] == -1 then
       -- Terminal is active, send commands
       vim.fn.jobsend(job_id, "clear\n")
-      local compile_cmd = string.format("g++ -std=c++17 %s -o %s && %s\n", sfname, sbase, sbase)
+      -- -I\"$HOME/.local/share\" provides bits/stdc++.h on macOS (patched GCC
+      -- header in ~/.local/share/bits); ignored on Linux where g++ has its own.
+      local compile_cmd = string.format("g++ -std=c++17 -I\"$HOME/.local/share\" %s -o %s && %s\n", sfname, sbase, sbase)
       vim.fn.jobsend(job_id, compile_cmd)
     else
       -- Terminal exists but job ended, create new one
       vim.cmd("quit")
       vim.cmd("below split")
       vim.cmd("resize 8")
-      local compile_cmd = string.format("g++ -std=c++17 %s -o %s && %s", sfname, sbase, sbase)
+      -- -I\"$HOME/.local/share\" provides bits/stdc++.h on macOS (patched GCC
+      -- header in ~/.local/share/bits); ignored on Linux where g++ has its own.
+      local compile_cmd = string.format("g++ -std=c++17 -I\"$HOME/.local/share\" %s -o %s && %s", sfname, sbase, sbase)
       vim.cmd("terminal " .. compile_cmd)
       vim.cmd("startinsert")
     end
@@ -63,7 +68,9 @@ function CompileAndRunCpp()
     -- Create new terminal
     vim.cmd("below split")
     vim.cmd("resize 8")
-    local compile_cmd = string.format("g++ -std=c++17 %s -o %s && %s", sfname, sbase, sbase)
+    -- -I\"$HOME/.local/share\" provides bits/stdc++.h on macOS (patched GCC
+    -- header in ~/.local/share/bits); ignored on Linux where g++ has its own.
+    local compile_cmd = string.format("g++ -std=c++17 -I\"$HOME/.local/share\" %s -o %s && %s", sfname, sbase, sbase)
     vim.cmd("terminal " .. compile_cmd)
     vim.cmd("startinsert")
   end

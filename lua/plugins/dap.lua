@@ -89,5 +89,53 @@ return {
         },
       }
     end
+
+    -- Build the current file (same clang command as competitest, into
+    -- <workspace>/binaries/) before the FIRST launch, so debugging always runs
+    -- the latest code instead of a stale binary. Wrapping dap.continue keeps
+    -- LazyVim's debug keymaps working unchanged.
+    local builtin_continue = dap.continue
+    dap.continue = function()
+      if dap.session() then
+        return builtin_continue()
+      end
+      local src = source_file()
+      if not is_csrc(src) then
+        return builtin_continue()
+      end
+      local ws = workspace_root()
+      local bin = ws .. "/binaries/" .. vim.fn.fnamemodify(src, ":t:r")
+      -- $HOME expands in the shell; -I provides the bits/stdc++.h shim on macOS
+      -- and is harmlessly ignored on Linux.
+      local cmd = string.format(
+        "mkdir -p '%s' && clang++ -Wall -std=c++17 -g -I\"$HOME/.local/share\" %s -o %s",
+        vim.fn.shellescape(ws .. "/binaries"),
+        vim.fn.shellescape(src),
+        vim.fn.shellescape(bin)
+      )
+      local errors = {}
+      vim.notify("Building " .. vim.fn.fnamemodify(src, ":t") .. " ...")
+      vim.fn.jobstart({ "sh", "-c", cmd }, {
+        stderr_buffered = true,
+        on_stderr = function(_, data)
+          if data then
+            vim.list_extend(errors, data)
+          end
+        end,
+        on_exit = function(_, code)
+          if code == 0 then
+            vim.schedule(builtin_continue)
+          else
+            vim.schedule(function()
+              vim.fn.setqflist(vim.tbl_map(function(l)
+                return { text = l }
+              end, errors))
+              vim.cmd("copen")
+              vim.notify("Build failed — see quickfix", vim.log.levels.ERROR)
+            end)
+          end
+        end,
+      })
+    end
   end,
 }

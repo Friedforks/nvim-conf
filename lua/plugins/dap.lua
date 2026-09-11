@@ -1,12 +1,9 @@
 return {
   "mfussenegger/nvim-dap",
   optional = true,
-  dependencies = {
-    -- Ensure C/C++ debugger is installed
-    "mason-org/mason.nvim",
-    optional = true,
-    opts = { ensure_installed = { "codelldb" } },
-  },
+  -- C/C++ debugging uses the system `gdb` (>= 14, for `--interpreter=dap`)
+  -- rather than a Mason-installed adapter. gdb is a distro package:
+  --   sudo pacman -S gdb
   keys = {
     { "<F9>",  function() require("dap").step_into() end,        desc = "DAP: step into" },
     { "<F10>", function() require("dap").step_over() end,        desc = "DAP: step over" },
@@ -17,17 +14,33 @@ return {
   },
   opts = function()
     local dap = require("dap")
-    if not dap.adapters["codelldb"] then
-      require("dap").adapters["codelldb"] = {
-        type = "server",
-        host = "localhost",
-        port = "${port}",
-        executable = {
-          command = "codelldb",
-          args = {
-            "--port",
-            "${port}",
-          },
+
+    -- gdb, not codelldb — because codelldb/LLDB cannot debug libstdc++ STL
+    -- iterators. LLDB formats the *container* fine (`std::set<int> = size=5`)
+    -- but has no working support for std::_Rb_tree_iterator /
+    -- std::_Rb_tree_const_iterator: it reports their children as
+    -- `<error: invalid value object>`, and LLDB's expression evaluator rejects
+    -- both `*it` and `it == unvis.end()` against libstdc++ types. gdb ships the
+    -- libstdc++ pretty-printers maintained by the GCC team, so `it` renders as
+    -- the element it points at and those expressions evaluate.
+    --
+    -- REPL note: gdb's DAP server hands `context = "repl"` input to the gdb
+    -- CLI, so prefix expressions with `p ` there (e.g. `p *it`). The Variables
+    -- and Watches panes send context="watch" and need no prefix.
+    --
+    -- Known gap: gdb cannot call a function that returns a class by value, so
+    -- `unvis.find(x)` still errors. Use `unvis.count(x)`, or compare against
+    -- `unvis.end()` (which works) instead.
+    if not dap.adapters.gdb then
+      dap.adapters.gdb = {
+        type = "executable",
+        command = "gdb",
+        args = {
+          "-q",
+          "--interpreter=dap", -- gdb >= 14
+          "-ex", "set confirm off",
+          "-ex", "set pagination off",
+          "-ex", "set print pretty on",
         },
       }
     end
@@ -69,7 +82,7 @@ return {
     for _, lang in ipairs({ "c", "cpp" }) do
       dap.configurations[lang] = {
         {
-          type = "codelldb",
+          type = "gdb",
           request = "launch",
           name = "Launch file",
           -- Function so it resolves the CURRENT buffer at run time (fixes the old
@@ -79,9 +92,12 @@ return {
             return workspace_root() .. "/binaries/" .. base
           end,
           cwd = function() return workspace_root() end,
+          -- gdb stops at main by default; keep codelldb's behaviour of running
+          -- straight to the first breakpoint instead.
+          stopAtBeginningOfMainSubprogram = false,
         },
         {
-          type = "codelldb",
+          type = "gdb",
           request = "attach",
           name = "Attach to process",
           pid = require("dap.utils").pick_process,
